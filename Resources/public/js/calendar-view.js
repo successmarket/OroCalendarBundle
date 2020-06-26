@@ -995,11 +995,11 @@ define(function(require) {
             let dayCol;
             const calendarElement = this.getCalendarElement();
             const currentView = calendarElement.fullCalendar('getView');
-
+        
             if (this.options.eventsOptions.recoverView) {
                 this.persistView();
             }
-
+        
             // shown interval in calendar timezone
             const shownInterval = {
                 start: currentView.intervalStart.clone().utc(),
@@ -1007,12 +1007,12 @@ define(function(require) {
             };
             // current time in calendar timezone
             const now = moment.tz(this.options.timezone);
-
+        
             if (currentView.name === 'month') {
                 // nothing to do
                 return;
             }
-
+        
             // this function is called every 1 minute
             if (now.hours() === 0 && now.minutes() <= 2) {
                 // the day has changed
@@ -1021,7 +1021,7 @@ define(function(require) {
                     .next()
                     .addClass('fc-today fc-state-highlight');
             }
-
+        
             const timeGrid = calendarElement.find('.fc-time-grid');
             timelineElement = timeGrid.children('.timeline-marker');
             if (timelineElement.length === 0) {
@@ -1029,18 +1029,24 @@ define(function(require) {
                 timelineElement = $('<hr class="timeline-marker">');
                 timeGrid.prepend(timelineElement);
             }
-
+        
             if (shownInterval.start.isBefore(now) && shownInterval.end.isAfter(now)) {
                 timelineElement.show();
             } else {
                 timelineElement.hide();
             }
-
-            const curSeconds = (now.hours() * 3600) + (now.minutes() * 60) + now.seconds();
-            const percentOfDay = curSeconds / 86400; // 24 * 60 * 60 = 86400, # of seconds in a day
-            const timelineTop = Math.floor(timeGrid.height() * percentOfDay);
-            timelineElement.css('top', timelineTop + 'px');
-
+        
+            const startOfCalendar = moment.duration(this.options.eventsOptions.minTime).asSeconds();
+            let endOfCalendar = moment.duration(this.options.eventsOptions.maxTime).asSeconds();
+            endOfCalendar = (endOfCalendar > 0) ? endOfCalendar : 86400; // Midnight or null is also 0
+        
+            let curSeconds = ((now.hours() * 3600) + (now.minutes() * 60) + now.seconds());
+            curSeconds -= startOfCalendar; // Remove seconds up to the start time of the calendar
+        
+            const pixelsPerSec = timeGrid.height() / (endOfCalendar - startOfCalendar); // Divide by the actual number of seconds
+        
+            timelineElement.css('top', (curSeconds * pixelsPerSec) + 'px');
+        
             if (currentView.name === 'agendaWeek') {
                 // week view, don't want the timeline to go the whole way across
                 dayCol = calendarElement.find('.fc-today:visible');

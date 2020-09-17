@@ -296,6 +296,8 @@ class UpdateChildManager
             ->setEnd($parent->getEnd())
             ->setAllDay($parent->getAllDay());
 
+        $this->copyOrganizerFields($parent, $child);
+
         if ($parent->isCancelled()) {
             $child->setCancelled(true);
         }

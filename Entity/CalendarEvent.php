@@ -855,7 +855,7 @@ class CalendarEvent extends ExtendCalendarEvent implements
      */
     public function getAttendees()
     {
-        $calendarEvent = $this->getParent() ? : $this;
+        $calendarEvent = $this->getParent() ?: $this;
 
         return $calendarEvent->attendees;
     }
@@ -1504,6 +1504,8 @@ class CalendarEvent extends ExtendCalendarEvent implements
         // no organizerEmail passed or organizerEmail is the same as calendar owner
         if ($organizerEmail === null || $organizerEmail === $owner->getEmail()) {
             $this->ownerIsOrganizer();
+        } elseif ($this->getParent() === null && $organizerEmail != $owner->getEmail()) {
+            $this->ownerIsOrganizer();
         } else {
             $this->setIsOrganizer(false);
         }
@@ -1520,9 +1522,6 @@ class CalendarEvent extends ExtendCalendarEvent implements
         $this->setIsOrganizer(true);
         $this->setOrganizerUser($owner);
         $this->setOrganizerEmail($owner->getEmail());
-
-        if (!$this->getOrganizerDisplayName()) {
-            $this->setOrganizerDisplayName($owner->getFullName());
-        }
+        $this->setOrganizerDisplayName($owner->getFullName());
     }
 }
